@@ -10,7 +10,7 @@ Agent B handles two types of tasks:
 
 ## Architecture Diagram
 
-<img src="Agent_B_Detailed_Execution_Flowchart.png" alt="Agent B Execution Flowchart" width="400">
+<img src="Agent_B_Detailed_Execution_Flowchart.png" alt="Agent B Execution Flowchart" width="200">
 
 The diagram above illustrates the complete workflow of Agent B, from task analysis through execution to documentation generation. It shows:
 - **Analyzing State**: LLM generates steps and detects task type (Guidance vs Execution mode)
@@ -60,11 +60,20 @@ The diagram above illustrates the complete workflow of Agent B, from task analys
 pip install -r requirements.txt
 playwright install chromium
 
-# Set up environment
-cp .env.example .env
-# Add your API keys to .env:
-- GOOGLE_API_KEY (from https://makersuite.google.com/app/apikey)
-- LANGSMITH_API_KEY (from https://smith.langchain.com)
+# Set up environment variables
+# Create a .env file in the root directory and add the following:
+
+# API Keys
+GOOGLE_API_KEY=your_google_api_key_here
+LANGSMITH_API_KEY=your_langsmith_api_key_here
+
+# LangSmith Configuration
+LANGSMITH_PROJECT=your_project_name
+LANGSMITH_TRACING=true
+
+# Browser Settings
+HEADLESS=false
+
 
 
 # Run
@@ -106,7 +115,7 @@ The system automatically:
 ## Output Structure
 
 ```
-outputs/3datasets/
+outputs/datasets/
 ├── linear/
 │   └── create_project_in_linear/
 │       ├── step_0_app.png
@@ -135,7 +144,7 @@ See the [Architecture Diagram](#architecture-diagram) above for a visual represe
 All workflow steps are automatically traced in LangSmith. View traces at:
 https://smith.langchain.com
 
-Set `LANGSMITH_PROJECT` in `.env` to organize traces by project.
+
 
 ## Example Workflow
 
