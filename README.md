@@ -1,13 +1,13 @@
 # Agent B - Runtime AI Workflow System
 
-Agent B receives natural-language tasks at runtime, automatically detects the web app from the task, fetches the base URL from `.env`, and captures UI states for workflow documentation.
+Agent B receives natural-language tasks at runtime, automatically detects the web app from the task, recognizes whether the task is a guidance (question) or execution (command) request, performs guidance-based demonstrations or execution-based actions accordingly, fetches the base URL from `config.py`, and captures UI states for workflow documentation.
 
-**Supports**: Linear, Notion, Asana, Trello, Jira, and any web app (configurable via .env)
+**Supports**: Linear, Notion, Asana, Trello, Jira, and any web app (configurable via config.py)
 
 ## How It Works
 
 1. **Task Analysis**: Agent B extracts the app name from the task (e.g., "Linear", "Notion") using an LLM
-2. **URL Resolution**: Fetches the base URL from `.env` file (e.g., `LINEAR_URL`, `NOTION_URL`)
+2. **URL Resolution**: Fetches the base URL from `config.py` file (from `APP_URLS` dictionary)
 3. **Step Planning**: Uses an LLM planner to break the task into step-by-step actionable points
 4. **Browser Automation**: Uses Playwright to navigate and interact with the app
 5. **State Detection**: Detects UI changes (URL changes, modals, forms, toasts) after each action
@@ -18,7 +18,7 @@ Agent B receives natural-language tasks at runtime, automatically detects the we
 
 **How Agent B accesses URLs:**
 
-1. **Initial URL Only**: Agent B determines the app name from task text, then fetches the base URL from `.env` (e.g., "Linear" → `LINEAR_URL` → `https://linear.app`)
+1. **Initial URL Only**: Agent B determines the app name from task text, then fetches the base URL from `config.py` (e.g., "Linear" → `APP_URLS["LINEAR"]` → `https://linear.app/login`)
 2. **Navigate Once**: Goes to that base URL using Playwright
 3. **UI-Based Navigation**: After that, ALL navigation is through UI interactions:
    - Clicking buttons (even if they open modals with no URLs)
@@ -27,9 +27,15 @@ Agent B receives natural-language tasks at runtime, automatically detects the we
 4. **State Capture**: Screenshots are taken at each interaction, regardless of whether the URL changed
 
 **Key Insight**: Many important UI states (modals, forms, dropdowns) don't have URLs. Agent B captures them by:
-- Detecting DOM changes (modals appearing, forms showing)
-- Taking screenshots at each detected state change
-- Not relying on URL changes for navigation
+- **DOM Change Detection**: Monitors the DOM for state changes using multiple detection strategies:
+  - **Modals/Dialogs**: Detects elements with `role="dialog"`, class names containing "Modal", "Dialog", "Overlay", or "Popup"
+  - **Forms**: Detects visible `<form>` elements and elements with `role="form"`
+  - **Dropdowns/Menus**: Detects elements with `role="menu"`, `role="listbox"`, or class names containing "Dropdown" or "Menu"
+  - **Success Indicators**: Detects text content containing "success", "created", "saved", "completed", or "done"
+  - **Loading States**: Detects loading spinners and elements with `aria-busy="true"`
+- **State Signature Tracking**: Creates a unique signature for each UI state to identify when the state actually changes (not just on every interaction)
+- **Screenshot Capture**: Takes screenshots at each detected state change, regardless of whether the URL changed
+- **Non-URL Navigation**: Fully supports UI interactions that don't change the URL (modals, overlays, inline forms)
 
 ## Setup
 
@@ -51,21 +57,41 @@ python main.py
 
 ## Configuration
 
-Edit `main.py` to add tasks for any web app:
+### Adding App URLs
+
+Add your web app URLs to `src/utils/config.py` in the `APP_URLS` dictionary:
 
 ```python
-tasks = [
-    "How do I create a project in Linear?",
-    "How do I filter a database in Notion?",
-    "How do I create a task in Asana?",
-    "How do I create a board in Trello?",
-]
+# In src/utils/config.py
+APP_URLS = {
+    "LINEAR": "https://linear.app/login",
+    "NOTION": "https://www.notion.so/login",
+    "ASANA": "https://app.asana.com/login",
+  
+}
 ```
+
+The system also has smart fallback logic that can automatically generate URLs for common apps based on their names (e.g., "Trello" → `https://trello.com/login`).
+
+
+### Running Tasks
+
+Tasks are entered interactively at runtime when you run `python main.py`. The system will prompt you to enter a task, which can be either:
+
+**Guidance Tasks** (Questions - demonstrates how to do something):
+- "How do I create a project in Linear?"
+- "How to see my tasks in Asana?"
+- "How to see my issues in Linear?"
+
+**Execution Tasks** (Commands - actually performs the action):
+- "Create a project in Linear named 'Project1'"
+- "Filter the issues with assignee 'Hardik Setia' in Linear"
 
 The system automatically:
 - Detects the app name from the task text
-- Fetches the corresponding URL from `.env` (e.g., `LINEAR_URL`, `NOTION_URL`)
-- Works with any web app (just add `{APP_NAME}_URL` to `.env`)
+- Recognizes whether it's a guidance (question) or execution (command) task
+- Fetches the corresponding URL from `config.py` (from `APP_URLS` dictionary, with smart fallback)
+- Works with any web app (add to `APP_URLS` in `config.py` or rely on automatic URL generation)
 
 ## Output Structure
 
@@ -88,9 +114,9 @@ outputs/3datasets/
 - **Gemini 2.5 Flash**: Task analysis, app detection, step planning, and action determination
 - **LangSmith**: Full observability and tracing (all operations are traced)
 - **Playwright**: Browser automation
-- **State Detection**: Detects UI changes (modals, forms, dropdowns) regardless of URL
+- **State Detection**: Detects UI changes by monitoring DOM changes (modals, forms, dropdowns, success indicators) regardless of URL
 - **Runtime Login**: Prompts for credentials at runtime when login is required
-- **Dynamic App Detection**: Extracts app name from task and fetches URL from `.env`
+- **Dynamic App Detection**: Extracts app name from task and fetches URL from `config.py`
 
 ## LangSmith Integration
 
@@ -104,9 +130,9 @@ Set `LANGSMITH_PROJECT` in `.env` to organize traces by project.
 For task: "How do I create a project in Linear?"
 
 1. Agent B extracts app name: "Linear" from task text
-2. Fetches URL from `.env`: `LINEAR_URL` → `https://linear.app`
+2. Fetches URL from `config.py`: `APP_URLS["LINEAR"]` → `https://linear.app/login`
 3. Analyzes task and creates step-by-step plan using LLM
-4. Navigates to `https://linear.app` (captures initial screenshot as step 0)
+4. Navigates to `https://linear.app/login` (captures initial screenshot as step 0)
 5. **If login required**: Prompts for manual login (user completes in browser)
 6. Executes each step:
    - Step 1: Finds and clicks "Create Project" button (modal opens - screenshot captured)
