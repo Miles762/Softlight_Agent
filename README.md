@@ -1,8 +1,10 @@
-# Agent B - Runtime AI Workflow System
+# Agent B - Runtime AI Web Workflow Executor with Visual Guides
 
-Agent B receives natural-language tasks at runtime, automatically detects the web app from the task, recognizes whether the task is a guidance (question) or execution (command) request, performs guidance-based demonstrations or execution-based actions accordingly, fetches the base URL from `config.py`, and captures UI states for workflow documentation.
 
-**Supports**: Linear, Notion, Asana, Trello, Jira, and any web app (configurable via config.py)
+
+Agent B is an AI-powered workflow documentation system that automatically executes web application tasks and generates step-by-step visual guides with UI screenshots. It intelligently analyzes natural language tasks, detects the target web app, performs the workflow using browser automation to interact with UI elements, and creates comprehensive decription with screenshots.
+
+**Supports**: Linear, Notion, Asana, and any web app (configurable via config.py)
 
 ## How It Works
 
