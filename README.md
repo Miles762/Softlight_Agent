@@ -57,22 +57,16 @@ python main.py
 
 ## Configuration
 
-### Adding App URLs
+### App URLs
 
-Add your web app URLs to `src/utils/config.py` in the `APP_URLS` dictionary:
+App URLs are pre-configured in `src/utils/config.py` in the `APP_URLS` dictionary:
 
-```python
 # In src/utils/config.py
 APP_URLS = {
     "LINEAR": "https://linear.app/login",
     "NOTION": "https://www.notion.so/login",
     "ASANA": "https://app.asana.com/login",
-  
-}
-```
-
-The system also has smart fallback logic that can automatically generate URLs for common apps based on their names (e.g., "Trello" → `https://trello.com/login`).
-
+}To add more web apps, simply add them to this dictionary. The system also has smart fallback logic that can automatically generate URLs for common apps based on their names (e.g., "Trello" → `https://trello.com/login`).
 
 ### Running Tasks
 
