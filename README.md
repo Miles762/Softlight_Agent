@@ -8,6 +8,16 @@ Agent B handles two types of tasks:
 
 **Supports**: Linear, Notion, Asana, and any web app (configurable via config.py)
 
+## Architecture Diagram
+
+![Agent B Execution Flowchart](Agent_B_Detailed_Execution_Flowchart.png)
+
+The diagram above illustrates the complete workflow of Agent B, from task analysis through execution to documentation generation. It shows:
+- **Analyzing State**: LLM generates steps and detects task type (Guidance vs Execution mode)
+- **Navigating State**: Browser navigation to the target application
+- **Executing State Loop**: DOM element finding, action execution, state detection, and screenshot capture
+- **Finalizing State**: Documentation generation with captured screenshots
+
 ## How It Works
 
 1. **Task Analysis**: Agent B analyzes the task using an LLM to:
@@ -117,6 +127,8 @@ outputs/3datasets/
 - **State Detection**: Detects UI changes by monitoring DOM changes (modals, forms, dropdowns, success indicators) regardless of URL
 - **Runtime Login**: Prompts for credentials at runtime when login is required
 - **Dynamic App Detection**: Extracts app name from task and fetches URL from `config.py`
+
+See the [Architecture Diagram](#architecture-diagram) above for a visual representation of the complete workflow.
 
 ## LangSmith Integration
 
