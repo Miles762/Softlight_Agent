@@ -111,6 +111,7 @@ logs/
 htmlcov/
 .tox/
 .hypothesis/
+outputs/
 
 # MyPy
 .mypy_cache/

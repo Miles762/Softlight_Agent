@@ -789,9 +789,9 @@ Use "semantic" strategy when intent matters more than exact text.
         
         # Generic action synonyms
         action_synonyms = {
-            "create": ["add", "new", "make", "+"],
-            "add": ["create", "new", "make", "+"],
-            "new": ["create", "add", "make", "+"],
+            "create": ["add", "new", "make"],
+            "add": ["create", "new", "make"],
+            "new": ["create", "add", "make"],
         }
         
         # Extract action and entity
